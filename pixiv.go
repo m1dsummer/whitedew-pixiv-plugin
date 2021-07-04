@@ -3,6 +3,7 @@ package pixiv_plugin
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/m1dsummer/whitedew"
 	"github.com/parnurzeal/gorequest"
 	"io"
@@ -62,7 +63,8 @@ func cachePictures(w *whitedew.WhiteDew) {
 		return
 	}
 
-	_,body,errs := gorequest.New().Get("https://pix.ipv4.host/ranks?page=1&date=2021-06-27&mode=month&pageSize=30").EndBytes()
+	pixivUrl := fmt.Sprintf("https://pix.ipv4.host/ranks?page=1&date=%s-01&mode=month&pageSize=30",time.Now().Format("2006-01"))
+	_,body,errs := gorequest.New().Get(pixivUrl).EndBytes()
 	if errs != nil {
 		log.Println(errs)
 		return
@@ -130,7 +132,6 @@ func downloadAndSave(w *whitedew.WhiteDew) {
 }
 
 func rowMegHandler(s *whitedew.Session) {
-	log.Println("row message handler")
 	msg := s.Message.GetContent()
 	cmd := "色图"
 	if strings.Contains(msg, cmd) {
@@ -154,4 +155,8 @@ func sendImage(s *whitedew.Session) {
 		msgStr := chain.Prepare().Image(imageBase64).String()
 		s.PostPrivateMessage(s.Sender.GetId(), msgStr)
 	}
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
